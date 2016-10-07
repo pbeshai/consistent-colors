@@ -67,3 +67,8 @@ h1 {
 header {
   margin-bottom: 30px;
 }
+
+.hash-function-error {
+  padding-top: 10px;
+  color: tomato;
+}

@@ -13,7 +13,13 @@ var outputTable;
 
 function readInputs() {
   // read in values from text areas
-  eval(`hash = ${hashInput.node().value.trim()}`);
+  try {
+    eval(`hash = ${hashInput.node().value.trim()}`);
+    // clear error message if eval is successful.
+    d3.select('.hash-function-error').text('');
+  } catch (e) {
+    d3.select('.hash-function-error').text(`ERROR: ${e.message}`);
+  }
   values = valuesInput.node().value.trim().split('\n');
   colors = colorsInput.node().value.trim().split('\n');
 
@@ -26,6 +32,9 @@ function readInputs() {
   console.log('got mapped =', mapped);
 }
 
+/**
+ * Updates color display table
+ */
 function updateTable(overlaps) {
   // remove existing rows
   const binding = outputTable.select('tbody').selectAll('tr').data(overlaps, d => d.key);
@@ -50,6 +59,9 @@ function updateTable(overlaps) {
 }
 
 
+/**
+ * Reprocesses Text boxes and update displays
+ */
 function update() {
   // read in the values and compute the mapping
   readInputs();
@@ -67,7 +79,6 @@ function update() {
 
   overlaps.sort((a, b) => a.key - b.key);
 
-
   // output the mapping
   updateTable(overlaps);
 }
@@ -82,6 +93,7 @@ function setup() {
   outputTable = outputContainer.select('table');
 
   d3.select('.recompute').on('click', update);
+  d3.select('.input').on('input', update);
   update();
 }
 
