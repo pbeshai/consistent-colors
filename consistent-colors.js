@@ -151,8 +151,32 @@ function varyColor(colors, overlaps) {
       const darkerScale = d3.scaleLinear().domain([0, 1]).range([baseColor, minLightnessColor]);
 
       // split the overlaps into those to make lighter and those to make darker
-      const makeDarker = overlap.values.filter((d, i) => (i > 0 && (i % 2 === 0)));
-      const makeLighter = overlap.values.filter((d, i) => (i > 0 && (i % 2 === 1)));
+      const valuesToModify = overlap.values.slice(1);
+
+      // figure out what proportion should be darker based on how close to the minimum
+      // lightness the base color is.
+      const darkerProportion = Math.max(0, baseColor.l - minLightness) / (maxLightness - minLightness);
+      const numToMakeDarker = Math.round(darkerProportion * valuesToModify.length);
+      const numToMakeLighter = valuesToModify.length - numToMakeDarker;
+
+      // use i % 2 so we alternate, but limit it until we have maxed out on the num to make darker.
+      const makeDarker = valuesToModify.filter((d, i) => {
+        const indexOfType = Math.floor(i / 2);
+        if (indexOfType < numToMakeDarker) {
+          // if we are still alternating with make lighter
+          if (indexOfType < numToMakeLighter && i % 2 === 1) {
+            return true;
+          // we already handled all the ones to make lighter, so caring about alternating
+          } else if (indexOfType >= numToMakeLighter) {
+            return true;
+          }
+        }
+
+        return false;
+      });
+      const makeLighter = valuesToModify.filter((d) => !makeDarker.includes(d));
+
+      console.log(baseColor.l, numToMakeDarker, makeDarker.length, makeLighter.length);
 
       // make the colors lighter or darker
       makeLighter.forEach((value, i) => {
