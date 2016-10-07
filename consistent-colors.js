@@ -12,6 +12,63 @@ var outputContainer;
 var outputTable;
 var dotplot;
 
+const COLORS = {
+  default:[
+    "hsl(58, 41%, 34%)",
+    "hsl(298, 75%, 42%)",
+    "hsl(137, 64%, 58%)",
+    "hsl(328, 84%, 53%)",
+    "hsl(120, 47%, 58%)",
+    "hsl(311, 82%, 43%)",
+    "hsl(98, 51%, 57%)",
+    "hsl(313, 67%, 28%)",
+    "hsl(64, 62%, 58%)",
+    "hsl(284, 55%, 55%)",
+    "hsl(37, 74%, 52%)",
+    "hsl(304, 65%, 55%)",
+    "hsl(127, 39%, 37%)",
+    "hsl(340, 73%, 55%)",
+    "hsl(165, 36%, 56%)",
+    "hsl(359, 66%, 52%)",
+    "hsl(269, 34%, 55%)",
+    "hsl(39, 58%, 37%)",
+    "hsl(297, 49%, 31%)",
+    "hsl(77, 39%, 52%)",
+    "hsl(321, 66%, 56%)",
+    "hsl(37, 43%, 57%)",
+    "hsl(304, 36%, 30%)",
+    "hsl(14, 56%, 50%)",
+    "hsl(309, 43%, 55%)",
+    "hsl(15, 38%, 30%)",
+    "hsl(333, 60%, 40%)",
+    "hsl(345, 42%, 60%)",
+    "hsl(335, 43%, 26%)",
+    "hsl(345, 39%, 43%)"
+  ],
+  category20c:[
+    "#3182bd",
+    "#6baed6",
+    "#9ecae1",
+    "#c6dbef",
+    "#e6550d",
+    "#fd8d3c",
+    "#fdae6b",
+    "#fdd0a2",
+    "#31a354",
+    "#74c476",
+    "#a1d99b",
+    "#c7e9c0",
+    "#756bb1",
+    "#9e9ac8",
+    "#bcbddc",
+    "#dadaeb",
+    "#636363",
+    "#969696",
+    "#bdbdbd",
+    "#d9d9d9"
+  ]
+}
+
 function createDotPlot() {
 
   var width = 800;
@@ -127,7 +184,7 @@ function updateTable(overlaps) {
     var colorIndex = d.key;
     var values = d.values;
     var tr = d3.select(this);
-    tr.append('td').text(colorIndex).style('background', colors[colorIndex]);
+    tr.append('td').classed('index-td', true);
 
     var coloredValues = values.map(value => `<span class='color-value-text' style='color: ${mapped[value]}'>${value}</span>`);
     tr.append('td').classed('values-td', true).html(coloredValues.join(''));
@@ -136,10 +193,13 @@ function updateTable(overlaps) {
   binding.merge(entering).each(function (d) {
     var colorIndex = d.key;
     var values = d.values;
-    var tr = d3.select(this);
+    var tr = d3.select(this)
     var coloredValues = values.map(value => `<span class='color-value-text' style='background-color: ${mapped[value]};'>${value}</span>`);
+    tr.select('.index-td').text(colorIndex).style('background', colors[colorIndex]);
     tr.select('.values-td').html(coloredValues.join(''));
   })
+
+  binding.exit().remove();
 }
 
 
@@ -168,6 +228,22 @@ function update() {
   dotplot.update(overlaps);
 }
 
+function handleLinkClick(textarea, values) {
+
+  textarea.node().value = values.join("\n");
+  update();
+}
+
+function addLinks(selection, textarea, links) {
+  d3.select(selection).selectAll('.link')
+    .data(d3.keys(links))
+    .enter()
+    .append('text')
+    .classed('link', true)
+    .text((d) => d)
+    .on('click', (d) => handleLinkClick(textarea, links[d]))
+
+}
 
 function setup() {
   // get the d3 selection of input elements
@@ -182,6 +258,8 @@ function setup() {
 
   d3.select('.recompute').on('click', update);
   d3.selectAll('.input').on('input', update);
+
+  addLinks('.color-links', colorsInput, COLORS)
   update();
 }
 
