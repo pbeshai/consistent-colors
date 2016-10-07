@@ -113,20 +113,30 @@ function varyColor(colors, overlaps) {
     const length = overlap.values.length;
     if (length > 1) {
       let brightenToggle = true;
-      let k = 1.0;
+      let k = 0.5;
+      let increment = 1.0;
       // Start at the 2nd overlapping index
       for (let i = 1; i < length; i++) {
         const index = overlap.values[i].index;
 
         // brighten / darken matching colors.
-        // Alternate between brightening and darkening.
         colors[index] = (brightenToggle) ? colors[index].brighter(k) : colors[index].darker(k);
-        brightenToggle = !brightenToggle;
-        // amount to brigten/darken by increases if we have used that same value
-        // to brigten and darken already.
+
+        // if over certain lightness point,
+        // switch to darker.
         if (brightenToggle) {
-          k += 1.0;
+          const lightness = d3.hcl(colors[index]).l
+          if (lightness > 60) {
+            brightenToggle = false;
+            k = 0.0;
+            increment = 1.0
+          }
+        } else {
+          console.log(k)
+          console.log(d3.hcl(colors[index]))
         }
+
+        k += (increment);
       }
     }
   });
