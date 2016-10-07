@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OVC Particles</title>
+    <style>
+      body {
+        background: #fff;
+        color: #333;
+        font-family: 'helvetica neue', sans-serif;
+      }
+
+      textarea {
+        display: block;
+        width: 800px;
+        height: 150px;
+        font-family: monospace;
+        font-size: 14px;
+      }
+
+      .color-value-text {
+        display: inline-block;
+        margin-right: 15px;
+        width: 60px;
+        font-size: 12px;
+        background-color: #eee;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding: 2px;
+        line-height: 1;
+      }
+
+      th {
+        text-align: left;
+      }
+
+      td, th {
+        padding: 2px 10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Consistent Colors</h1>
+    <button class="recompute">Recompute</button>
+    <div class="output">
+      Show some output here lazy.
+      <table class="output-table">
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Values</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <div class="hash-function-container">
+      <h5>Hash Function</h5>
+<textarea class="hash-function-input">
+function hash(string, numColors) {
+  if (!string) {
+    return 0;
+  }
+
+  const sum = d3.sum(string.split('').map(ch => ch.charCodeAt(0) * ch.charCodeAt(0)));
+  return sum % numColors;
+}
+</textarea>
+    </div>
+    <div class="data-values-container">
+      <h5>Values</h5>
+<textarea class="data-values-input">
+AS33662
+AS10796
+AS7018
+AS701
+AS22773
+AS20115
+AS209
+AS3593
+AS19720
+AS33363
+AS7029
+AS16586
+AS6389
+AS22394
+AS19108
+AS1239
+AS30036
+AS12015
+AS21928
+AS20057
+AS22561
+AS11398
+AS11492
+AS6079
+AS4323
+AS174
+AS21864
+AS6621
+AS14654
+AS6181
+AS16591
+AS11062
+AS11711
+AS3737
+AS17184
+AS11776
+AS10753
+AS16491
+AS20473
+AS11232
+AS29877
+AS27364
+AS13333
+AS32016
+AS11404
+AS17306
+AS10507
+AS11915
+AS7132
+AS7459
+AS8047
+AS18566
+AS30633
+AS46562
+AS22759
+AS13490
+AS36149
+AS46375
+AS14615
+AS8100
+AS15093
+AS11976
+AS63949
+AS36351
+AS15003
+AS4922
+AS2152
+AS10838
+AS7782
+AS26827
+AS15169
+AS46690
+AS19817
+AS5056
+AS40285
+AS18712
+AS13926
+AS22646
+AS1651
+AS32448
+AS19165
+AS11215
+AS7065
+AS9155
+AS15227
+AS18779
+AS12989
+AS6939
+AS237
+AS46627
+AS29933
+AS14291
+AS20412
+AS14618
+AS1668
+AS32780
+AS21565
+AS23473
+AS19271
+AS26801
+AS6614
+AS21321
+AS30600
+AS22709
+AS32475
+AS23089
+AS32329
+AS19158
+AS11796
+AS12042
+AS22363
+AS21688
+AS30404
+AS16527
+AS81
+AS3456
+AS32953
+AS4565
+AS13576
+AS2711
+AS20355
+AS11979
+AS25934
+AS31939
+AS13536
+AS5760
+AS10242
+AS5078
+AS55330
+AS40749
+AS12097
+AS10835
+AS16904
+AS26554
+AS14677
+AS198605
+AS19406
+AS16399
+AS3479
+AS20257
+AS62943
+AS46687
+AS3598
+AS3801
+AS12177
+AS25921
+AS7828
+AS29791
+AS12129
+AS2914
+AS6198
+AS36180
+AS53435
+AS12231
+AS14989
+AS13370
+AS18687
+AS11272
+AS11495
+AS25720
+AS7106
+AS13768
+AS2381
+AS27288
+AS393238
+AS35986
+AS19331
+AS16700
+AS8025
+AS26504
+AS25853
+AS6325
+AS21766
+AS15177
+AS2386
+AS22584
+AS22925
+AS33544
+AS6315
+AS20077
+AS53488
+AS12025
+AS55900
+AS14755
+AS3257
+AS600
+AS22898
+AS4581
+AS19092
+AS16863
+AS33548
+AS11077
+AS13368
+AS17054
+AS1998
+AS33749
+AS46887
+AS23515
+AS11550
+AS23404
+</textarea>
+    </div>
+    <div class="colors-container">
+      <h5>Colors</h5>
+<textarea class="colors-input">
+hsl(58, 41%, 34%)
+hsl(298, 75%, 42%)
+hsl(137, 64%, 58%)
+hsl(328, 84%, 53%)
+hsl(120, 47%, 58%)
+hsl(311, 82%, 43%)
+hsl(98, 51%, 57%)
+hsl(313, 67%, 28%)
+hsl(64, 62%, 58%)
+hsl(284, 55%, 55%)
+hsl(37, 74%, 52%)
+hsl(304, 65%, 55%)
+hsl(127, 39%, 37%)
+hsl(340, 73%, 55%)
+hsl(165, 36%, 56%)
+hsl(359, 66%, 52%)
+hsl(269, 34%, 55%)
+hsl(39, 58%, 37%)
+hsl(297, 49%, 31%)
+hsl(77, 39%, 52%)
+hsl(321, 66%, 56%)
+hsl(37, 43%, 57%)
+hsl(304, 36%, 30%)
+hsl(14, 56%, 50%)
+hsl(309, 43%, 55%)
+hsl(15, 38%, 30%)
+hsl(333, 60%, 40%)
+hsl(345, 42%, 60%)
+hsl(335, 43%, 26%)
+hsl(345, 39%, 43%)
+</textarea>
+    </div>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="consistent-colors.js"></script>
+    <script>
+
+    </script>
+  </body>
+</html>
