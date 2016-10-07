@@ -72,3 +72,8 @@ header {
   padding-top: 10px;
   color: tomato;
 }
+
+.link {
+  padding-right: 10px;
+  cursor: pointer;
+}
