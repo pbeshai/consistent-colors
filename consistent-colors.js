@@ -181,7 +181,7 @@ function setup() {
   dotplot('.dotplot-container');
 
   d3.select('.recompute').on('click', update);
-  d3.select('.input').on('input', update);
+  d3.selectAll('.input').on('input', update);
   update();
 }
 
