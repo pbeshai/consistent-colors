@@ -10,6 +10,89 @@ var valuesInput;
 var colorsInput;
 var outputContainer;
 var outputTable;
+var dotplot;
+
+function createDotPlot() {
+
+  var width = 800;
+  var height = 300;
+  var margin = {top: 20, right: 20, bottom: 20, left: 20};
+
+  var radius = 6;
+  var pad = 1;
+  var svg = null;
+  var g = null;
+
+  var chart  = function(selection, data) {
+    svg = d3.select(selection).append('svg')
+      .attr('width', width + margin.right + margin.left)
+      .attr('height', height + margin.top + margin.bottom);
+
+    g = svg.append('g')
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  }
+
+  chart.update = function(data) {
+    const maxDots = d3.max(data, (d) => d.values.length);
+    console.log('update')
+    console.log(maxDots)
+
+    height = (radius * 2 + pad) * maxDots
+
+    svg.attr('height', height + margin.top + margin.bottom);
+
+    const dataKeys = data.map((d) => d.key)
+
+    const xScale = d3.scaleBand()
+      .domain(dataKeys)
+      .range([0, width]);
+
+    const keys = g.selectAll('.key')
+      .data(dataKeys)
+    const keysE = keys.enter()
+      .append('text')
+      .classed('key', true);
+
+    keys.merge(keysE)
+      .attr('x', (d) => xScale(d))
+      .attr('y', height + margin.bottom )
+      .attr('text-anchor', 'middle')
+      .text((d) => d);
+
+    keys.exit().remove();
+
+    g.selectAll('.col').remove();
+
+    const columns = g.selectAll('.col')
+      .data(data, (d) => d.key)
+
+    const columnsE = columns.enter()
+      .append('g')
+      .classed('col', true);
+
+    columns.merge(columnsE)
+      .attr('transform', (d) => `translate(${xScale(d.key)},${height})`)
+
+    columns.exit().remove();
+
+    const dots = columnsE.selectAll('.dot')
+      .data((d) => d.values, (d) => d)
+
+    const dotsE = dots.enter()
+      .append('circle')
+      .classed('dot', true)
+
+    dots.merge(dotsE)
+      .attr('r', radius)
+      .attr('cx', 0)
+      .attr('cy', (d, i) => (radius * 2 + pad) * -i)
+      .attr('fill', (d) => mapped[d]);
+
+    dots.exit().remove();
+  }
+
+  return chart;
+}
 
 function readInputs() {
   // read in values from text areas
@@ -25,6 +108,7 @@ function readInputs() {
 
   // compute mapping using hash function
   mapped = colorsFor(colors, values, hash);
+
 
   console.log('got hash =', hash);
   console.log('got values =', values);
@@ -81,6 +165,7 @@ function update() {
 
   // output the mapping
   updateTable(overlaps);
+  dotplot.update(overlaps);
 }
 
 
@@ -92,8 +177,11 @@ function setup() {
   outputContainer = d3.select('.output');
   outputTable = outputContainer.select('table');
 
+  dotplot = createDotPlot();
+  dotplot('.dotplot-container');
+
   d3.select('.recompute').on('click', update);
-  d3.select('.input').on('input', update);
+  d3.selectAll('.input').on('input', update);
   update();
 }
 
