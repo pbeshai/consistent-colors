@@ -53,7 +53,7 @@ function updateTable(overlaps) {
     var colorIndex = d.key;
     var values = d.values;
     var tr = d3.select(this);
-    var coloredValues = values.map(value => `<span class='color-value-text' style='color: ${mapped[value]}'>${value}</span>`);
+    var coloredValues = values.map(value => `<span class='color-value-text' style='background-color: ${mapped[value]};'>${value}</span>`);
     tr.select('.values-td').html(coloredValues.join(''));
   })
 }
@@ -98,6 +98,29 @@ function setup() {
 }
 
 
+/**
+ * Gives the farthest possible value between 0 and 1 based on previous entries.
+ *
+ * 0 === 0      === 0/1
+ * 1 === 1      === 1/1
+ * 2 === 0.5    === 1/2
+ * 3 === 0.25   === 1/4
+ * 4 === 0.75   === 3/4
+ * 5 === 0.125  === 1/8
+ * 6 === 0.375  === 3/8
+ * 7 === 0.625  === 5/8
+ * 8 === 0.875  === 7/8
+ */
+function getFactor(index) {
+  if (index === 0 || index === 1) {
+	  return index;
+  }
+  var denominator = Math.pow(2, Math.ceil(Math.log2(index)))
+  var numerator = (index - (denominator / 2 + 1)) * 2 + 1;
+
+  return numerator / denominator;
+}
+
 
 /**
  * Change brightness of overlapping colors.
@@ -112,32 +135,32 @@ function varyColor(colors, overlaps) {
   overlaps.forEach((overlap) => {
     const length = overlap.values.length;
     if (length > 1) {
-      let brightenToggle = true;
-      let k = 0.5;
-      let increment = 1.0;
-      // Start at the 2nd overlapping index
-      for (let i = 1; i < length; i++) {
-        const index = overlap.values[i].index;
+      // simple step: split even and odd into "make brighter" and "make darker"
+      // eventually this should be made smarter to split unequally based on the lightness
+      // of the starting color
+      const baseColor = colors[overlap.values[0].index];
+      const minLightness = 0.2;
+      const maxLightness = 0.8;
 
-        // brighten / darken matching colors.
-        colors[index] = (brightenToggle) ? colors[index].brighter(k) : colors[index].darker(k);
+      // create the end points for the scales
+      const maxLightnessColor = d3.hsl(baseColor.h, baseColor.s, maxLightness, baseColor.opacity);
+      const minLightnessColor = d3.hsl(baseColor.h, baseColor.s, minLightness, baseColor.opacity);
 
-        // if over certain lightness point,
-        // switch to darker.
-        if (brightenToggle) {
-          const lightness = d3.hcl(colors[index]).l
-          if (lightness > 60) {
-            brightenToggle = false;
-            k = 0.0;
-            increment = 1.0
-          }
-        } else {
-          console.log(k)
-          console.log(d3.hcl(colors[index]))
-        }
+      // create the scales that map from base color to max lightness or max darkness colors
+      const lighterScale = d3.scaleLinear().domain([0, 1]).range([baseColor, maxLightnessColor]);
+      const darkerScale = d3.scaleLinear().domain([0, 1]).range([baseColor, minLightnessColor]);
 
-        k += (increment);
-      }
+      // split the overlaps into those to make lighter and those to make darker
+      const makeDarker = overlap.values.filter((d, i) => (i > 0 && (i % 2 === 0)));
+      const makeLighter = overlap.values.filter((d, i) => (i > 0 && (i % 2 === 1)));
+
+      // make the colors lighter or darker
+      makeLighter.forEach((value, i) => {
+        colors[value.index] = lighterScale(getFactor(i + 1));
+      });
+      makeDarker.forEach((value, i) => {
+        colors[value.index] = darkerScale(getFactor(i + 1));
+      });
     }
   });
 
@@ -158,7 +181,7 @@ function extractColors(colors, values, hashFunction, valueAccessor = d => d) {
   const maxCount = colors.length;
   const indexes = values.map((v, i) => ({ index: i, hash: hashFunction(valueAccessor(v), maxCount) }));
 
-  const mappedColors = indexes.map((h) => d3.color(colors[h.hash]));
+  const mappedColors = indexes.map((h) => d3.hsl(d3.color(colors[h.hash])));
 
   // groups by hash value - so we can easily find duplicate colors.
   // alternative would be to rely on comparing d3.color values inside `varyColor`
