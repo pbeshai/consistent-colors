@@ -30,6 +30,12 @@
         line-height: 1;
       }
 
+      .hash-function-error {
+        padding-top: 10px;
+        color: tomato;
+
+      }
+
       th {
         text-align: left;
       }
@@ -58,7 +64,7 @@
     </div>
     <div class="hash-function-container">
       <h5>Hash Function</h5>
-<textarea class="hash-function-input">
+<textarea class="hash-function-input input">
 function hash(string, numColors) {
   if (!string) {
     return 0;
@@ -68,10 +74,12 @@ function hash(string, numColors) {
   return sum % numColors;
 }
 </textarea>
+    <div class="hash-function-error"></div>
+
     </div>
     <div class="data-values-container">
       <h5>Values</h5>
-<textarea class="data-values-input">
+<textarea class="data-values-input input">
 AS33662
 AS10796
 AS7018
@@ -276,7 +284,7 @@ AS23404
     </div>
     <div class="colors-container">
       <h5>Colors</h5>
-<textarea class="colors-input">
+<textarea class="colors-input input">
 hsl(58, 41%, 34%)
 hsl(298, 75%, 42%)
 hsl(137, 64%, 58%)
