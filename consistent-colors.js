@@ -232,13 +232,16 @@ function handleLinkClick(textarea, values) {
 
   textarea.node().value = values.join("\n");
   update();
+
+  return false;
 }
 
 function addLinks(selection, textarea, links) {
   d3.select(selection).selectAll('.link')
     .data(d3.keys(links))
     .enter()
-    .append('text')
+    .append('a')
+    .attr("href", "#")
     .classed('link', true)
     .text((d) => d)
     .on('click', (d) => handleLinkClick(textarea, links[d]))
