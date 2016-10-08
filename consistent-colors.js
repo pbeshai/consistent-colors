@@ -268,26 +268,52 @@ function setup() {
 
 
 /**
- * Gives the farthest possible value between 0 and 1 based on previous entries.
- *
- * 0 === 0      === 0/1
- * 1 === 1      === 1/1
- * 2 === 0.5    === 1/2
- * 3 === 0.25   === 1/4
- * 4 === 0.75   === 3/4
- * 5 === 0.125  === 1/8
- * 6 === 0.375  === 3/8
- * 7 === 0.625  === 5/8
- * 8 === 0.875  === 7/8
+ * Given a sorted array of points with boundaries min and max, finds
+ * the value in [min, max] that is farthest away from all values in points.
  */
-function getFactor(index) {
-  if (index === 0 || index === 1) {
-	  return index;
-  }
-  var denominator = Math.pow(2, Math.ceil(Math.log2(index)))
-  var numerator = (index - (denominator / 2 + 1)) * 2 + 1;
+function findFarthestPoint(points, min, max) {
+  // initialize with distance from min boundary
+  let maxDistance = points[0] - min;
+  let maxEntryPoint = min;
 
-  return numerator / denominator;
+  // see if distance between other points is bigger
+  for (let i = 1; i < points.length; i++) {
+    // divide by 2 since we care about distance to entry point which is halfway between
+    let distance = (points[i] - points[i - 1]) / 2;
+    if (distance > maxDistance) {
+      maxDistance = distance;
+      maxEntryPoint = points[i - 1] + (distance);
+    }
+  }
+  // see if the distance to the max value is biggest
+  if (max - points[points.length - 1] > maxDistance) {
+    maxDistance = max - points[points.length - 1];
+    maxEntryPoint = max;
+  }
+
+  return maxEntryPoint;
+}
+
+/**
+ * Returns new array points where value is inserted in sorted order
+ */
+function insertPoint(points, value) {
+  for (let i = 0; i < points.length; i++) {
+    if (points[i] > value) {
+      return points.slice(0, i).concat(value, points.slice(i));
+    }
+  }
+
+  return points.concat(value);
+}
+
+/**
+ * Helper function to insert a point at the farthest position from
+ * other points.
+ */
+function insertPointAtFarthestPosition(points, min, max) {
+  let value = findFarthestPoint(points, min, max);
+  return insertPoint(points, value);
 }
 
 
@@ -304,55 +330,24 @@ function varyColor(colors, overlaps) {
   overlaps.forEach((overlap) => {
     const length = overlap.values.length;
     if (length > 1) {
-      // simple step: split even and odd into "make brighter" and "make darker"
-      // eventually this should be made smarter to split unequally based on the lightness
-      // of the starting color
       const baseColor = colors[overlap.values[0].index];
       const minLightness = 0.2;
       const maxLightness = 0.8;
-
-      // create the end points for the scales
-      const maxLightnessColor = d3.hsl(baseColor.h, baseColor.s, maxLightness, baseColor.opacity);
-      const minLightnessColor = d3.hsl(baseColor.h, baseColor.s, minLightness, baseColor.opacity);
-
-      // create the scales that map from base color to max lightness or max darkness colors
-      const lighterScale = d3.scaleLinear().domain([0, 1]).range([baseColor, maxLightnessColor]);
-      const darkerScale = d3.scaleLinear().domain([0, 1]).range([baseColor, minLightnessColor]);
-
-      // split the overlaps into those to make lighter and those to make darker
       const valuesToModify = overlap.values.slice(1);
 
-      // figure out what proportion should be darker based on how close to the minimum
-      // lightness the base color is.
-      const darkerProportion = Math.max(0, baseColor.l - minLightness) / (maxLightness - minLightness);
-      const numToMakeDarker = Math.round(darkerProportion * valuesToModify.length);
-      const numToMakeLighter = valuesToModify.length - numToMakeDarker;
+      // initialize lightness values to the base
+      let lightnessValues = [baseColor.l];
 
-      // use i % 2 so we alternate, but limit it until we have maxed out on the num to make darker.
-      const makeDarker = valuesToModify.filter((d, i) => {
-        const indexOfType = Math.floor(i / 2);
-        if (indexOfType < numToMakeDarker) {
-          // if we are still alternating with make lighter
-          if (indexOfType < numToMakeLighter && i % 2 === 1) {
-            return true;
-          // we already handled all the ones to make lighter, so caring about alternating
-          } else if (indexOfType >= numToMakeLighter) {
-            return true;
-          }
-        }
+      // make the color the furthest lightness away from all the others that preceded it.
+      valuesToModify.forEach((value, i) => {
+        // find the farthest lightness value from the ones that preceded it
+        const modifiedLightness = findFarthestPoint(lightnessValues, minLightness, maxLightness);
 
-        return false;
-      });
-      const makeLighter = valuesToModify.filter((d) => !makeDarker.includes(d));
+        // add this to the list of "used" lightness values (useful for the next iteration)
+        lightnessValues = insertPoint(lightnessValues, modifiedLightness);
 
-      console.log(baseColor.l, numToMakeDarker, makeDarker.length, makeLighter.length);
-
-      // make the colors lighter or darker
-      makeLighter.forEach((value, i) => {
-        colors[value.index] = lighterScale(getFactor(i + 1));
-      });
-      makeDarker.forEach((value, i) => {
-        colors[value.index] = darkerScale(getFactor(i + 1));
+        // update the color for this value to have a modified lightness of the base color
+        colors[value.index] = d3.hsl(baseColor.h, baseColor.s, modifiedLightness, baseColor.opacity);
       });
     }
   });
