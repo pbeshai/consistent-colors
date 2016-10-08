@@ -259,7 +259,6 @@ function setup() {
   dotplot = createDotPlot();
   dotplot('.dotplot-container');
 
-  d3.select('.recompute').on('click', update);
   d3.selectAll('.input').on('input', update);
 
   addLinks('.color-links', colorsInput, COLORS)
@@ -315,7 +314,6 @@ function insertPointAtFarthestPosition(points, min, max) {
   let value = findFarthestPoint(points, min, max);
   return insertPoint(points, value);
 }
-
 
 /**
  * Change brightness of overlapping colors.
