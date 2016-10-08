@@ -14,3 +14,5 @@ visualized together.
 Consistent Colors tries to solve this problem. It provides an interface to play around with different
 hash functions and sets of colors while demonstrating how varying of color happens when two entities
 get mapped to the same color.
+
+[Try it out here](https://pbeshai.github.io/consistent-colors/).
